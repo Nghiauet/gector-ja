@@ -14,17 +14,17 @@
 
 # [START gae_python38_app]
 # [START gae_python3_app]
-import unicodedata
-from difflib import ndiff
+import unicodedata # for text normalizaton 
+from difflib import ndiff # for highlight the difference
 
-from flask import Flask, render_template, request, jsonify
-from model import GEC
+from flask import Flask, render_template, request, jsonify # flask for web interface
+from model import GEC # import GEC model
 
 
 # If `entrypoint` is not defined in app.yaml, App Engine will look for an app
 # called `app` in `main.py`.
 app = Flask(__name__)
-gec = GEC(pretrained_weights_path='data/model/model_checkpoint')
+gec = GEC(pretrained_weights_path='data/model/model_checkpoint') # init the model with pretrained weights
 
 
 @app.route('/', methods=['GET'])
@@ -33,11 +33,11 @@ def index():
 
 
 @app.route('/correct', methods=['POST'])
-def correct():
+def correct(): # hander the post request retrive the text from the user request 
     text = unicodedata.normalize('NFKC', request.json['text']).replace(' ', '')
-    correct_text = gec.correct(text)
-    diffs = list(ndiff(text, correct_text))
-    print(f'Correction: {text} -> {correct_text}')
+    correct_text = gec.correct(text) # correct text from model 
+    diffs = list(ndiff(text, correct_text)) # compare the diff
+    print(f'Correction: {text} -> {correct_text}') # print output
     return jsonify({
         'correctedText': correct_text,
         'diffs': diffs
@@ -48,6 +48,6 @@ if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This
     # can be configured by adding an `entrypoint` to app.yaml.
-    app.run(host='127.0.0.1', port=8080, threaded=False, use_reloader=False)
+    app.run(host='127.0.0.1', port=8080, threaded=False, use_reloader=False) # config the model in 127.0.0.1
 # [END gae_python3_app]
 # [END gae_python38_app]
