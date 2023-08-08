@@ -1,3 +1,4 @@
 *.pyc
 data/corpora/*
 data/model/*
+gector-ja-env/*
