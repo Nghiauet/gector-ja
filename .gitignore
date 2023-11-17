@@ -2,3 +2,7 @@
 data/corpora/*
 data/model/*
 gector-ja-env/*
+.vscode/settings.json
+model_checkpoint/checkpoint
+model_checkpoint/model_checkpoint.data-00000-of-00001
+model_checkpoint/model_checkpoint.index

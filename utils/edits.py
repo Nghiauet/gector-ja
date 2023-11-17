@@ -8,7 +8,7 @@ import Levenshtein
 from .helpers import Vocab, create_example
 
 
-class EditTagger:
+class EditTagger: # define a class for edit tagging 
     """
     Get edit sequences to transform source sentence to target sentence.
 
@@ -17,22 +17,22 @@ class EditTagger:
 
     def __init__(self,
                  verb_adj_forms_path='data/transform.txt',
-                 vocab_detect_path='data/output_vocab/detect.txt',
-                 vocab_labels_path='data/output_vocab/labels.txt'):
+                 vocab_detect_path='data/output_vocab/detect.txt', # correct and incorrect
+                 vocab_labels_path='data/output_vocab/labels.txt'): # tag label
         self.tokenizer = AutoTokenizer.from_pretrained(
-            'cl-tohoku/bert-base-japanese-v2')
-        encode, decode = self.get_verb_adj_form_dicts(verb_adj_forms_path)
-        self.encode_verb_adj_form = encode
-        self.decode_verb_adj_form = decode
-        self.vocab_detect = Vocab.from_file(vocab_detect_path)
-        self.vocab_labels = Vocab.from_file(vocab_labels_path)
-        self.edit_freq = Counter()
+            'cl-tohoku/bert-base-japanese-v2') # load tokenizer from pretrained model
+        encode, decode = self.get_verb_adj_form_dicts(verb_adj_forms_path) # get verb/adj form dicts
+        self.encode_verb_adj_form = encode # encode verb/adj form
+        self.decode_verb_adj_form = decode # decode verb/adj form
+        self.vocab_detect = Vocab.from_file(vocab_detect_path) # load the vocab
+        self.vocab_labels = Vocab.from_file(vocab_labels_path) # load the vocab
+        self.edit_freq = Counter() # count the number of edits
 
-    def get_verb_adj_form_dicts(self, verb_adj_forms_path):
-        encode, decode = {}, {}
+    def get_verb_adj_form_dicts(self, verb_adj_forms_path): # get verb adj form dicts
+        encode, decode = {}, {} # initialize 
         with open(verb_adj_forms_path, 'r', encoding='utf-8') as f:
             for line in f:
-                words, tags = line.split(':')
+                words, tags = line.split(':') 
                 tags = tags.strip()
                 word1, word2 = words.split('_')
                 tag1, tag2 = tags.split('_')
@@ -40,31 +40,31 @@ class EditTagger:
                 if decode_key not in decode:
                     encode[words] = tags
                     decode[decode_key] = word2
-        return encode, decode
+        return encode, decode # transform dict 
 
     def tokenize(self, sentence, **kwargs):
-        ids = self.tokenizer(sentence, **kwargs)['input_ids']
-        return self.tokenizer.convert_ids_to_tokens(ids)
+        ids = self.tokenizer(sentence, **kwargs)['input_ids'] # tokenizer with pretrain tokenizer 
+        return self.tokenizer.convert_ids_to_tokens(ids) # 
 
     def join_tokens(self, tokens):
-        return self.tokenizer.convert_tokens_to_string(tokens).replace(' ', '')
+        return self.tokenizer.convert_tokens_to_string(tokens).replace(' ', '') # join the token
 
     def __call__(self, source, target, levels=False):
         edit_rows = []
         if levels:
             edit_levels = self.get_edit_levels(source, target)
         else:
-            edit_levels = [self.get_edits(source, target)]
+            edit_levels = [self.get_edits(source, target)] # get the tagged example keep , transform 
         for cur_tokens, cur_edits in edit_levels:
             cur_edits = [e[0] for e in cur_edits]
             self.edit_freq.update(cur_edits)
             row = create_example(cur_tokens, cur_edits, self.tokenizer,
                                  self.vocab_labels, self.vocab_detect)
             edit_rows.append(row)
-        return edit_rows
+        return edit_rows # return the edit rows
 
-    def get_edits(self, source, target, add_special_tokens=True, max_len=128):
-        source_tokens = self.tokenize(source,
+    def get_edits(self, source, target, add_special_tokens=True, max_len=128): # add tag to the source sentence
+        source_tokens = self.tokenize(source, # source_tokens = ['I', 'enjoys', 'playing', 'football'] and labels = [['$KEEP'], ['$TRANSFORM_VBP'], ['$KEEP'], ['$KEEP']]
                                       add_special_tokens=add_special_tokens)
         target_tokens = self.tokenize(target, add_special_tokens=True)
         if len(source_tokens) > max_len or len(target_tokens) > max_len:
@@ -98,7 +98,7 @@ class EditTagger:
 
         return source_tokens, labels
 
-    def perfect_align(self, t, T, insertions_allowed=0,
+    def perfect_align(self, t, T, insertions_allowed=0, # the difference between 2 sentence edit distance
                       cost_function=Levenshtein.distance):
         # dp[i, j, k] is a minimal cost of matching first `i` tokens of `t` with
         # first `j` tokens of `T`, after making `k` insertions after last match
@@ -168,8 +168,8 @@ class EditTagger:
         key = f'{source_token}_{target_token}'
         encoding = self.encode_verb_adj_form.get(key, '')
         if source_token and encoding:
-            return f'$TRANSFORM_{encoding}'
-        return None
+            return f'$TRANSFORM_{encoding}' # only for tranform verb/adj form
+        return None #source_token = "enjoys" and target_token = "enjoy", get_g_trans("enjoys", "enjoy") could return "$TRANSFORM_VBP"
 
     def convert_alignment_into_edits(self, alignment, i1):
         edits = []
@@ -216,7 +216,7 @@ class EditTagger:
         # append everything after target to this word
         for i in range(min_cost_idx + 1, len(target_tokens)):
             edits.append((shift_idx, f'$APPEND_{target_tokens[i]}'))
-        return edits
+        return edits # transform the sentence
 
     def get_edit_levels(self, source, target, max_iter=10):
         levels = []

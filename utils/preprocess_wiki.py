@@ -16,7 +16,7 @@ errorify = Errorify()
 edit_tagger = EditTagger()
 
 
-def preprocess_wiki_part(args,
+def preprocess_wiki_part(args, # preprocess wiki data 
                          correct_file='corr_sentences.txt',
                          incorrect_file='incorr_sentences.txt',
                          edit_tags_file='edit_tagged_sentences.tfrec.gz'):

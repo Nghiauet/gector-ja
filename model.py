@@ -57,6 +57,7 @@ class GEC:
         return model # reutrn model
 
     def predict(self, input_ids): # predict method
+
         labels_probs, detect_probs = self.model(input_ids, training=False) # get output
 
         # get maximum INCORRECT probability across tokens for each sequence

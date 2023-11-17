@@ -22,10 +22,10 @@ def main(weights_path, vocab_dir, transforms_file, corpus_dir):
         tf.config.experimental_connect_to_cluster(tpu)
         tf.tpu.experimental.initialize_tpu_system(tpu)
         print('TPUs: ', tf.config.list_logical_devices('TPU'))
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError) as e: # detect TPU
         tpu = None
     source_path = tf.io.gfile.glob(os.path.join(corpus_dir, '*.src'))[0]
-    with tf.io.gfile.GFile(source_path, 'r') as f:
+    with tf.io.gfile.GFile(source_path, 'r') as f: # load file from gfile 
         source_sents = [line for line in f.readlines() if line]
     reference_tokens = []
     for reference_path in tf.io.gfile.glob(os.path.join(corpus_dir, '*.ref*')):
@@ -33,9 +33,9 @@ def main(weights_path, vocab_dir, transforms_file, corpus_dir):
             tokens = [tokenize(line) for line in f.readlines() if line]
             reference_tokens.append(tokens)
     reference_tokens = list(zip(*reference_tokens))
-    print(f'Loaded {len(source_sents)} src, {len(reference_tokens)} ref')
+    print(f'Loaded {len(source_sents)} src, {len(reference_tokens)} ref') # load sorce
 
-    if tpu:
+    if tpu: # if TPU distributed
         strategy = tf.distribute.TPUStrategy(tpu)
     else:
         strategy = tf.distribute.MultiWorkerMirroredStrategy()

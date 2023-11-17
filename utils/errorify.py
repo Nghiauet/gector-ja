@@ -8,19 +8,7 @@ from fugashi import Tagger
 
 
 class Errorify:
-    """Generate artificial errors in sentences."""
-
-    def __init__(self, reading_lookup_path='./data/reading_lookup.json'):
-        self.tagger = Tagger('-Owakati')
-        self.error_prob = [0.05, 0.07, 0.25, 0.35, 0.28]
-        self.core_particles = ['が', 'の', 'を', 'に', 'へ', 'と', 'で', 'から',
-                               'より', 'は', 'も']
-        self.other_particles = ['か', 'の', 'や', 'に', 'と', 'やら', 'なり',
-                                'だの', 'ばかり', 'まで', 'だけ', 'ほど', 'くらい',
-                                'など', 'やら', 'こそ', 'でも', 'しか', 'さえ',
-                                'だに', 'ば', 'て', 'のに', 'ので', 'から']
-        with open(reading_lookup_path) as f:
-            self.reading_lookup = json.load(f)
+    """Generate aheading_lookup = json.load(f)
 
     def delete_error(self, token, feature):
         """Delete a token."""
@@ -54,7 +42,7 @@ class Errorify:
             if feature.kanaBase not in self.reading_lookup:
                 return token
             return choice(self.reading_lookup[feature.kanaBase])
-
+# funciton to create error data 
     def __call__(self, sentence):
         """Get sentence with artificially generated errors."""
         # need to this because fugashi has some weird bug

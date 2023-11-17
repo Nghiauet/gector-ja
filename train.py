@@ -25,15 +25,15 @@ def train(corpora_dir, output_weights_path, vocab_dir, transforms_file,
         tf.config.experimental_connect_to_cluster(tpu)
         tf.tpu.experimental.initialize_tpu_system(tpu)
         print('TPUs: ', tf.config.list_logical_devices('TPU'))
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError) as e: # detect TPU
         tpu = None
-    files = [os.path.join(root, filename)
-             for root, dirs, files in tf.io.gfile.walk(corpora_dir)
-             if filename in files]
-    dataset = read_dataset(files).shuffle(buffer_size=1024)
+    files = [os.path.join(root, filename) # get files  
+             for root, dirs, files in tf.io.gfile.walk(corpora_dir) # walk in the dir
+             if filename in files] # if file in files
+    dataset = read_dataset(files).shuffle(buffer_size=1024) # suffle the dataset
     if dataset_len:
         dataset_card = tf.data.experimental.assert_cardinality(dataset_len)
-        dataset = dataset.apply(dataset_card)
+        dataset = dataset.apply(dataset_card) # apply dataset cardinality
     if 0 < dataset_ratio < 1:
         dataset_len = int(dataset_len * dataset_ratio)
         dataset = dataset.take(dataset_len)
@@ -41,9 +41,9 @@ def train(corpora_dir, output_weights_path, vocab_dir, transforms_file,
     print('Loaded dataset')
 
     dev_len = int(dataset_len * dev_ratio)
-    train_set = dataset.skip(dev_len).prefetch(AUTO)
-    dev_set = dataset.take(dev_len).prefetch(AUTO)
-    print(train_set.cardinality().numpy(), dev_set.cardinality().numpy())
+    train_set = dataset.skip(dev_len).prefetch(AUTO) # set the train set 
+    dev_set = dataset.take(dev_len).prefetch(AUTO) # set the dev set
+    print(train_set.cardinality().numpy(), dev_set.cardinality().numpy()) # 
     print(f'Using {dev_ratio} of dataset for dev set')
     train_set = train_set.batch(batch_size, num_parallel_calls=AUTO)
     dev_set = dev_set.batch(batch_size, num_parallel_calls=AUTO)
